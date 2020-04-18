@@ -1,12 +1,16 @@
 // mac937@nyu.edu
-// hw14 question 1
+// hw14
 
 #include <iostream>
 #include <vector>
 #include <cassert>
 #include <algorithm>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
+
+const bool VERBOSE = false;
 
 void divide(size_t start, size_t length, size_t& outStart1, size_t& outLen1, size_t& outStart2, size_t& outLen2) {
     outStart1 = start;
@@ -33,8 +37,10 @@ vector<T> findBounds(const vector<T>& values, size_t start, size_t length) {
     assert(leftLength + rightLength >= 3);
     vector<T> leftBounds = findBounds(values, leftStart, leftLength);
     vector<T> rightBounds = findBounds(values, rightStart, rightLength);
-    // because length >= 3, these are both size == 2
-    vector<T> bounds({min(leftBounds[0], rightBounds[0]), max(leftBounds[1], rightBounds[1])});
+    vector<T> bounds({
+        min(leftBounds[0], rightBounds[0]),
+        max(leftBounds[1], rightBounds[1]),
+    });
     return bounds;
 }
 
@@ -69,29 +75,38 @@ void testFindBounds(const vector<T>& values) {
         pastFirst = true;
     }
     vector<T> bounds = findBounds(values);
+    if (VERBOSE) {
+        cout << "expect [" << expectedMin << ", " << expectedMax << "]; actual is [" << bounds[0] << ", " << bounds[1] << "]" << endl;
+        cout << "values: ";
+        for (T value : values) {
+            cout << value << ' ';
+        }
+        cout << endl;
+    }
     assertBoundsEqual(bounds, expectedMin, expectedMax);
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cert-msc51-cpp"
-#pragma ide diagnostic ignored "cert-msc50-cpp"
+#pragma clang diagnostic push                       // stage: cut
+#pragma ide diagnostic ignored "cert-msc51-cpp"     // stage: cut
+#pragma ide diagnostic ignored "cert-msc50-cpp"     // stage: cut
 void testFindBounds() {
-    assertBoundsEqual(findBounds<int>({-61, -8, 33, 1, 17}), -61, 33);
     vector<int> emptyInts = vector<int>();
-    vector<int> emptyIntsBounds = findBounds(emptyInts);
-    assert(emptyIntsBounds.empty());
+    assert(findBounds(emptyInts).empty());
     vector<double> emptyDoubles = vector<double>();
-    vector<double> emptyDoublesBounds = findBounds(emptyDoubles);
-    assert(emptyDoublesBounds.empty());
-    vector<int> singletonInt({1});
-    vector<int> singletonIntBounds = findBounds(singletonInt);
-    assertBoundsEqual(singletonIntBounds, 1, 1);
-    vector<double> singletonDouble({2.5});
-    vector<double> singletonDoubleBounds = findBounds(singletonDouble);
-    assertBoundsEqual(singletonDoubleBounds, 2.5, 2.5);
+    assert(findBounds(emptyDoubles).empty());
+    assertBoundsEqual(findBounds<int>({1}), 1, 1);
+    assertBoundsEqual(findBounds<double>({2.5}), 2.5, 2.5);
+    assertBoundsEqual(findBounds<int>({-61, -8, 33, 1, 17}), -61, 33);
     int randIntMin = -100, randIntMax = 100;
     int numTrials = 100;
-    srand(0xbad1dea);
+    unsigned int seed = time(nullptr);
+    // stage: cut start
+    char* seedStr = getenv("HW14_SEED");
+    if (seedStr != nullptr) {
+        seed = (int) strtol(seedStr, nullptr, 10);
+    }
+    // stage: cut stop
+    srand(seed);
     for (int i = 2; i <= 10; i++) {
         for (int t = 0; t < numTrials; t++) {
             vector<int> intValues;
@@ -113,7 +128,7 @@ void testFindBounds() {
     testFindBounds<int>({-3, 39, -193, 0, 0, 38, 11, 7, 3, 66, 64, 23});
     testFindBounds<double>({-1.0, 5.5, -2.9, -2.99, 85239899.12, 1.3e12 -2.999, 0, 0.11});
 }
-#pragma clang diagnostic pop
+#pragma clang diagnostic pop                        // stage: cut
 
 void testDivide() {
     size_t s1, l1, s2, l2;
