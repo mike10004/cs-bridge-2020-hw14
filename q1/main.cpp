@@ -11,7 +11,7 @@ using namespace std;
 void divide(size_t start, size_t length, size_t& outStart1, size_t& outLen1, size_t& outStart2, size_t& outLen2) {
     outStart1 = start;
     outLen1 = length / 2;
-    outStart2 = outLen1;
+    outStart2 = start + outLen1;
     outLen2 = length - outLen1;
 }
 
@@ -21,19 +21,21 @@ vector<T> findBounds(const vector<T>& values, size_t start, size_t length) {
         return vector<T>();
     }
     if (length == 1) {
-        return vector<T>({values[0], values[0]});
+        return vector<T>({values[start], values[start]});
     }
     if (length == 2) {
         int minOffset = values[start] < values[start + 1] ? 0 : 1;
         int maxOffset = minOffset == 0 ? 1 : 0;
-        return vector<T>(values[start + minOffset], values[start + maxOffset]);
+        return vector<T>({values[start + minOffset], values[start + maxOffset]});
     }
     size_t leftStart, leftLength, rightStart, rightLength;
     divide(start, length, leftStart, leftLength, rightStart, rightLength);
-    // because length >= 3, we are sure leftLength + rightLength >= 3
+    assert(leftLength + rightLength >= 3);
     vector<T> leftBounds = findBounds(values, leftStart, leftLength);
     vector<T> rightBounds = findBounds(values, rightStart, rightLength);
-
+    // because length >= 3, these are both size == 2
+    vector<T> bounds({min(leftBounds[0], rightBounds[0]), max(leftBounds[1], rightBounds[1])});
+    return bounds;
 }
 
 template <class T>
@@ -74,6 +76,7 @@ void testFindBounds(const vector<T>& values) {
 #pragma ide diagnostic ignored "cert-msc51-cpp"
 #pragma ide diagnostic ignored "cert-msc50-cpp"
 void testFindBounds() {
+    assertBoundsEqual(findBounds<int>({-61, -8, 33, 1, 17}), -61, 33);
     vector<int> emptyInts = vector<int>();
     vector<int> emptyIntsBounds = findBounds(emptyInts);
     assert(emptyIntsBounds.empty());
@@ -117,28 +120,28 @@ void testDivide() {
     divide(0, 0, s1, l1, s2, l2);
     assert(s1 == 0 && l1 == 0 && s2 == 0 && l2 == 0);
     divide(0, 1, s1, l1, s2, l2);
-    assert(s1 == 0 && l1 == 1 && s2 == 1 && l2 == 0);
+    assert(s1 == 0 && l1 == 0 && s2 == 0 && l2 == 1);
     divide(0, 2, s1, l1, s2, l2);
     assert(s1 == 0 && l1 == 1 && s2 == 1 && l2 == 1);
     divide(0, 3, s1, l1, s2, l2);
-    assert(s1 == 0 && l1 == 2 && s2 == 2 && l2 == 1);
+    assert(s1 == 0 && l1 == 1 && s2 == 1 && l2 == 2);
     divide(0, 4, s1, l1, s2, l2);
     assert(s1 == 0 && l1 == 2 && s2 == 2 && l2 == 2);
     divide(0, 5, s1, l1, s2, l2);
-    assert(s1 == 0 && l1 == 3 && s2 == 3 && l2 == 2);
+    assert(s1 == 0 && l1 == 2 && s2 == 2 && l2 == 3);
     // start at 10 instead of 0
     divide(10, 0, s1, l1, s2, l2);
     assert(s1 == 10 && l1 == 0 && s2 == 10 && l2 == 0);
     divide(10, 1, s1, l1, s2, l2);
-    assert(s1 == 10 && l1 == 1 && s2 == 11 && l2 == 0);
+    assert(s1 == 10 && l1 == 0 && s2 == 10 && l2 == 1);
     divide(10, 2, s1, l1, s2, l2);
     assert(s1 == 10 && l1 == 1 && s2 == 11 && l2 == 1);
     divide(10, 3, s1, l1, s2, l2);
-    assert(s1 == 10 && l1 == 2 && s2 == 12 && l2 == 1);
+    assert(s1 == 10 && l1 == 1 && s2 == 11 && l2 == 2);
     divide(10, 4, s1, l1, s2, l2);
     assert(s1 == 10 && l1 == 2 && s2 == 12 && l2 == 2);
     divide(10, 5, s1, l1, s2, l2);
-    assert(s1 == 10 && l1 == 3 && s2 == 13 && l2 == 2);
+    assert(s1 == 10 && l1 == 2 && s2 == 12 && l2 == 3);
 }
 
 int main() {
