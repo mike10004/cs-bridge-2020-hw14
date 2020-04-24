@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
-#include <algorithm>
 #include <cstdlib>
 #include <ctime>
 
@@ -12,13 +11,41 @@ using namespace std;
 
 const bool VERBOSE = false;
 
-void divide(size_t start, size_t length, size_t& outStart1, size_t& outLen1, size_t& outStart2, size_t& outLen2) {
+/**
+ * Performs calculations required to divide a region of an array into two roughly equal halves.
+ * @param start array start index
+ * @param length array length
+ * @param outStart1 output argument assigned the start index of the first array
+ * @param outLen1 output argument assigned the length of the first array
+ * @param outStart2 output argument assigned the start index of the second array
+ * @param outLen2 output argument assigned the length of the second array
+ */
+void divideArrayRegion(size_t start, size_t length, size_t& outStart1, size_t& outLen1, size_t& outStart2, size_t& outLen2) {
     outStart1 = start;
     outLen1 = length / 2;
     outStart2 = start + outLen1;
     outLen2 = length - outLen1;
 }
 
+template<class T>
+T getMin(T a, T b) {
+    return a < b ? a : b;
+}
+
+template<class T>
+T getMax(T a, T b) {
+    return a > b ? a : b;
+}
+
+/**
+ * Finds the bounds of values in a region of a vector.
+ * @tparam T vector value type
+ * @param values vector
+ * @param start region start index
+ * @param length region length
+ * @return if vector is nonempty, a vector containing minimum and maximum values in that order;
+ * if vector is empty, an empty vector
+ */
 template<class T>
 vector<T> findBounds(const vector<T>& values, size_t start, size_t length) {
     if (length == 0) {
@@ -33,17 +60,23 @@ vector<T> findBounds(const vector<T>& values, size_t start, size_t length) {
         return vector<T>({values[start + minOffset], values[start + maxOffset]});
     }
     size_t leftStart, leftLength, rightStart, rightLength;
-    divide(start, length, leftStart, leftLength, rightStart, rightLength);
+    divideArrayRegion(start, length, leftStart, leftLength, rightStart, rightLength);
     assert(leftLength + rightLength >= 3);
     vector<T> leftBounds = findBounds(values, leftStart, leftLength);
     vector<T> rightBounds = findBounds(values, rightStart, rightLength);
     vector<T> bounds({
-        min(leftBounds[0], rightBounds[0]),
-        max(leftBounds[1], rightBounds[1]),
+        getMin(leftBounds[0], rightBounds[0]),
+        getMax(leftBounds[1], rightBounds[1]),
     });
     return bounds;
 }
 
+/**
+ * Finds the bounds of values in a vector.
+ * @tparam T vector value type
+ * @param values vector of values
+ * @return a vector containing minimum and maximum values in that order; if the argument vector is empty, an empty vector is returned
+ */
 template <class T>
 vector<T> findBounds(const vector<T>& values) {
     return findBounds(values, 0, values.size());
@@ -132,30 +165,30 @@ void testFindBounds() {
 
 void testDivide() {
     size_t s1, l1, s2, l2;
-    divide(0, 0, s1, l1, s2, l2);
+    divideArrayRegion(0, 0, s1, l1, s2, l2);
     assert(s1 == 0 && l1 == 0 && s2 == 0 && l2 == 0);
-    divide(0, 1, s1, l1, s2, l2);
+    divideArrayRegion(0, 1, s1, l1, s2, l2);
     assert(s1 == 0 && l1 == 0 && s2 == 0 && l2 == 1);
-    divide(0, 2, s1, l1, s2, l2);
+    divideArrayRegion(0, 2, s1, l1, s2, l2);
     assert(s1 == 0 && l1 == 1 && s2 == 1 && l2 == 1);
-    divide(0, 3, s1, l1, s2, l2);
+    divideArrayRegion(0, 3, s1, l1, s2, l2);
     assert(s1 == 0 && l1 == 1 && s2 == 1 && l2 == 2);
-    divide(0, 4, s1, l1, s2, l2);
+    divideArrayRegion(0, 4, s1, l1, s2, l2);
     assert(s1 == 0 && l1 == 2 && s2 == 2 && l2 == 2);
-    divide(0, 5, s1, l1, s2, l2);
+    divideArrayRegion(0, 5, s1, l1, s2, l2);
     assert(s1 == 0 && l1 == 2 && s2 == 2 && l2 == 3);
     // start at 10 instead of 0
-    divide(10, 0, s1, l1, s2, l2);
+    divideArrayRegion(10, 0, s1, l1, s2, l2);
     assert(s1 == 10 && l1 == 0 && s2 == 10 && l2 == 0);
-    divide(10, 1, s1, l1, s2, l2);
+    divideArrayRegion(10, 1, s1, l1, s2, l2);
     assert(s1 == 10 && l1 == 0 && s2 == 10 && l2 == 1);
-    divide(10, 2, s1, l1, s2, l2);
+    divideArrayRegion(10, 2, s1, l1, s2, l2);
     assert(s1 == 10 && l1 == 1 && s2 == 11 && l2 == 1);
-    divide(10, 3, s1, l1, s2, l2);
+    divideArrayRegion(10, 3, s1, l1, s2, l2);
     assert(s1 == 10 && l1 == 1 && s2 == 11 && l2 == 2);
-    divide(10, 4, s1, l1, s2, l2);
+    divideArrayRegion(10, 4, s1, l1, s2, l2);
     assert(s1 == 10 && l1 == 2 && s2 == 12 && l2 == 2);
-    divide(10, 5, s1, l1, s2, l2);
+    divideArrayRegion(10, 5, s1, l1, s2, l2);
     assert(s1 == 10 && l1 == 2 && s2 == 12 && l2 == 3);
 }
 
