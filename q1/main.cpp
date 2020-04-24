@@ -27,11 +27,25 @@ void divideArrayRegion(size_t start, size_t length, size_t& outStart1, size_t& o
     outLen2 = length - outLen1;
 }
 
+/**
+ * Gets the lesser of two values.
+ * @tparam T value type
+ * @param a a value
+ * @param b another value
+ * @return the minimum
+ */
 template<class T>
 T getMin(T a, T b) {
     return a < b ? a : b;
 }
 
+/**
+ * Gets the greater of two values.
+ * @tparam T value type
+ * @param a a value
+ * @param b another value
+ * @return the maximum
+ */
 template<class T>
 T getMax(T a, T b) {
     return a > b ? a : b;
